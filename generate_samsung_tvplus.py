@@ -21,6 +21,11 @@ OUTPUT_DIR = 'output'
 PLAYLIST_FILE = 'samsung_tvplus.m3u'
 EPG_FILE = 'samsung_tvplus.xml'
 
+# Base URL where the generated files are served from (e.g. raw GitHub URL).
+# Used to embed x-tvg-url in the #EXTM3U header so TiviMate auto-loads the EPG.
+# Set via env var or leave blank to omit the header attribute.
+EPG_BASE_URL = os.getenv('EPG_BASE_URL', '')  # e.g. https://raw.githubusercontent.com/USER/REPO/main/output
+
 # Default settings - can be overridden by environment variables
 DEFAULT_REGIONS = os.getenv('REGIONS', 'all')  # comma-separated regions or 'all'
 DEFAULT_GROUPS = os.getenv('GROUPS', '')  # comma-separated groups to include (empty = all)
@@ -108,7 +113,14 @@ def filter_channels(data, regions, groups):
 
 def generate_m3u_playlist(data, channels):
     """Generate M3U playlist content"""
-    lines = ['#EXTM3U']
+    # Build the #EXTM3U header, optionally embedding the EPG URL so clients
+    # like TiviMate can discover and load it automatically.
+    if EPG_BASE_URL:
+        epg_url = EPG_BASE_URL.rstrip('/') + '/' + EPG_FILE
+        header = f'#EXTM3U x-tvg-url="{epg_url}"'
+    else:
+        header = '#EXTM3U'
+    lines = [header]
     
     # Sort channels
     if SORT_BY == 'name':
