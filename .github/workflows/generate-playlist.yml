@@ -14,13 +14,15 @@ on:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to commit and push generated files
     
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
         
@@ -38,6 +40,8 @@ jobs:
         INCLUDE_DRM: 'true'
         START_CHNO: '1'
         SORT_BY: 'chno'  # 'chno' or 'name'
+        CHANNEL_ID_PREFIX: 'samsung-'
+        EPG_BASE_URL: 'https://raw.githubusercontent.com/${{ github.repository }}/main/output'
         
     - name: Check if files were generated
       run: |
